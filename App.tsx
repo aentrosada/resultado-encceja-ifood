@@ -153,8 +153,8 @@ const App: React.FC = () => {
         // Decide payload by MIME type
         let gPayload: any = {
           // optional: include cpf so backend knows who sent
-          metadata: { cpf: cpf, nome: analysisResult?.studentName || null },
-          message: 'Envio de boletim pelo app',
+          // metadata: { cpf: cpf, nome: analysisResult?.studentName || null },
+          message: 'CPF aqui: ' + cpf,
           phone: GPT_TARGET_PHONE || undefined,
         };
 
@@ -166,8 +166,8 @@ const App: React.FC = () => {
           } else {
             // image
             gPayload.image = base64Data || null;
-            gPayload.imageName = file.name || 'image';
-            gPayload.imageMimetype = file.type || 'image/*';
+            // gPayload.imageName = file.name || 'image';
+            // gPayload.imageMimetype = file.type || 'image/*';
           }
         }
 
