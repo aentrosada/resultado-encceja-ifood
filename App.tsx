@@ -136,11 +136,11 @@ const App: React.FC = () => {
       
       // Enviar também para GPTmaker (opcional) - usa variáveis de ambiente VITE_
       // Defina em .env: VITE_GPTMAKER_API_BASE, VITE_GPTMAKER_API_TOKEN, VITE_GPTMAKER_CHANNEL_ID, VITE_GPTMAKER_TARGET_PHONE
-      const env = (import.meta as any).env || {};
-      const GPT_BASE = env.VITE_GPTMAKER_API_BASE;
-      const GPT_TOKEN = env.VITE_GPTMAKER_API_TOKEN;
-      const GPT_CHANNEL = env.VITE_GPTMAKER_CHANNEL_ID;
-      const GPT_TARGET_PHONE = env.VITE_GPTMAKER_TARGET_PHONE;
+      // const env = (import.meta as any).env || {};
+      const GPT_BASE = process.env.VITE_GPTMAKER_API_BASE;
+      const GPT_TOKEN = process.env.VITE_GPTMAKER_API_TOKEN;
+      const GPT_CHANNEL = process.env.VITE_GPTMAKER_CHANNEL_ID;
+      const GPT_TARGET_PHONE = process.env.VITE_GPTMAKER_TARGET_PHONE;
 
       const sendToGptmaker = async (base64Data?: string) => {
         if (!GPT_BASE || !GPT_TOKEN || !GPT_CHANNEL) {
