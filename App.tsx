@@ -136,11 +136,11 @@ const App: React.FC = () => {
       
       // Enviar também para GPTmaker (opcional) - usa variáveis de ambiente VITE_
       // Defina em .env: VITE_GPTMAKER_API_BASE, VITE_GPTMAKER_API_TOKEN, VITE_GPTMAKER_CHANNEL_ID, VITE_GPTMAKER_TARGET_PHONE
-      const env = (import.meta as any).env || {};
-      const GPT_BASE = process.env.VITE_GPTMAKER_API_BASE;
-      const GPT_TOKEN = process.env.VITE_GPTMAKER_API_TOKEN;
-      const GPT_CHANNEL = process.env.VITE_GPTMAKER_CHANNEL_ID;
-      const GPT_TARGET_PHONE = process.env.VITE_GPTMAKER_TARGET_PHONE;
+      // const env = (import.meta as any).env || {};
+      const GPT_BASE = 'https://api.gptmaker.ai/v2';
+      const GPT_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJncHRtYWtlciIsImlkIjoiM0NCRTM0RTI2MkVDMzFBRjkyNTgwNjNCOUY1ODE2NTIiLCJ0ZW5hbnQiOiIzQ0JFMzRFMjYyRUMzMUFGOTI1ODA2M0I5RjU4MTY1MiIsInV1aWQiOiI4ZWE2ODgxNC05Y2YxLTQxNzgtOGExNC1hMTAwMTMyODA2ZWMifQ.7Ls6qb5nmh0e9bC8KRkXRBaztp9aabvr1LE-VKp2ZYo';
+      const GPT_CHANNEL = '3CE0A176F84D2085A6163E515EE8943B';
+      const GPT_TARGET_PHONE = '5514998780239';
 
       const sendToGptmaker = async (base64Data?: string) => {
         if (!GPT_BASE || !GPT_TOKEN || !GPT_CHANNEL) {
