@@ -52,6 +52,16 @@ const App: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
+      // Valida tipos permitidos: JPG, PNG, PDF
+      const allowed = ['image/jpeg', 'image/png', 'application/pdf'];
+      if (!allowed.includes(selectedFile.type)) {
+        setErrorMsg('Formato não suportado. Envie JPG, PNG ou PDF.');
+        setFile(null);
+        setPreviewUrl(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
+
       setFile(selectedFile);
       const url = URL.createObjectURL(selectedFile);
       setPreviewUrl(url);
@@ -123,6 +133,79 @@ const App: React.FC = () => {
         },
         body: JSON.stringify(payload),
       });
+      
+      // Enviar também para GPTmaker (opcional) - usa variáveis de ambiente VITE_
+      // Defina em .env: VITE_GPTMAKER_API_BASE, VITE_GPTMAKER_API_TOKEN, VITE_GPTMAKER_CHANNEL_ID, VITE_GPTMAKER_TARGET_PHONE
+      const env = (import.meta as any).env || {};
+      const GPT_BASE = env.VITE_GPTMAKER_API_BASE;
+      const GPT_TOKEN = env.VITE_GPTMAKER_API_TOKEN;
+      const GPT_CHANNEL = env.VITE_GPTMAKER_CHANNEL_ID;
+      const GPT_TARGET_PHONE = env.VITE_GPTMAKER_TARGET_PHONE;
+
+      const sendToGptmaker = async (base64Data?: string) => {
+        if (!GPT_BASE || !GPT_TOKEN || !GPT_CHANNEL) {
+          console.warn('GPTmaker env vars not set; skipping GPTmaker POST');
+          return;
+        }
+
+        const url = `${GPT_BASE.replace(/\/$/, '')}/channel/${GPT_CHANNEL}/start-conversation`;
+
+        // Decide payload by MIME type
+        let gPayload: any = {
+          // optional: include cpf so backend knows who sent
+          metadata: { cpf: cpf, nome: analysisResult?.studentName || null },
+          message: 'Envio de boletim pelo app',
+          phone: GPT_TARGET_PHONE || undefined,
+        };
+
+        if (file) {
+          if (file.type === 'application/pdf') {
+            gPayload.document = base64Data || null;
+            gPayload.documentName = file.name || 'document.pdf';
+            gPayload.documentMimetype = file.type || 'application/pdf';
+          } else {
+            // image
+            gPayload.image = base64Data || null;
+            gPayload.imageName = file.name || 'image';
+            gPayload.imageMimetype = file.type || 'image/*';
+          }
+        }
+
+        try {
+          const resp = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${GPT_TOKEN}`,
+            },
+            body: JSON.stringify(gPayload),
+          });
+
+          // Note: many third-party APIs require CORS config. If you get CORS errors,
+          // call this endpoint from your server instead of the browser.
+          if (!resp.ok) {
+            const text = await resp.text();
+            console.warn('GPTmaker response not ok', resp.status, text);
+          } else {
+            console.log('GPTmaker POST success', await resp.json().catch(() => 'no-json'));
+          }
+        } catch (err) {
+          console.error('Erro enviando para GPTmaker:', err);
+        }
+      };
+
+      // Obtemos base64 novamente apenas para enviar ao GPTmaker (se houver arquivo)
+      if (file) {
+        try {
+          const base64Data = await fileToGenerativePart(file);
+          await sendToGptmaker(base64Data);
+        } catch (err) {
+          console.error('Erro ao preparar arquivo para GPTmaker:', err);
+        }
+      } else {
+        // enviar sem arquivo
+        await sendToGptmaker();
+      }
       
     } catch (error) {
       console.error("Erro ao enviar dados (mas prosseguindo para sucesso):", error);
