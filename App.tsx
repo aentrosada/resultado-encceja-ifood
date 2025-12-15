@@ -101,10 +101,9 @@ const App: React.FC = () => {
 
   const handleConfirm = async () => {
     if (!analysisResult) return;
-    if (isSending) return; // já enviando
+    if (isSending) return;
     setIsSending(true);
 
-    // Estrutura dos dados para envio para a planilha
     const payload = {
       cpf: cpf,
       nome: analysisResult.studentName || "Não identificado",
@@ -117,100 +116,34 @@ const App: React.FC = () => {
       data_envio: new Date().toLocaleString('pt-BR')
     };
 
-    console.log("Enviando dados para planilha:", payload);
-
     try {
-      // URL do Google Script fornecida
       const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzN4YjaC4DYGr8unSN_hN0FMd9LEkyflX5xWbKPKZ2Vi0-YOVyTsCbxXJuvRWn5xkFI/exec";
-      
-      // Enviamos com no-cors para evitar bloqueios de navegador comuns com Google Apps Script
-      // O script deve estar configurado para receber POST (doPost)
-      await fetch(WEBHOOK_URL, {
+
+      fetch(WEBHOOK_URL, {
         method: 'POST',
-        mode: 'no-cors', 
+        mode: 'no-cors',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
-      });
-      
-      // Enviar também para GPTmaker (opcional) - usa variáveis de ambiente VITE_
-      // Defina em .env: VITE_GPTMAKER_API_BASE, VITE_GPTMAKER_API_TOKEN, VITE_GPTMAKER_CHANNEL_ID, VITE_GPTMAKER_TARGET_PHONE
-      // const env = (import.meta as any).env || {};
-      const GPT_BASE = 'https://api.gptmaker.ai/v2';
-      const GPT_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJncHRtYWtlciIsImlkIjoiM0NCRTM0RTI2MkVDMzFBRjkyNTgwNjNCOUY1ODE2NTIiLCJ0ZW5hbnQiOiIzQ0JFMzRFMjYyRUMzMUFGOTI1ODA2M0I5RjU4MTY1MiIsInV1aWQiOiI4ZWE2ODgxNC05Y2YxLTQxNzgtOGExNC1hMTAwMTMyODA2ZWMifQ.7Ls6qb5nmh0e9bC8KRkXRBaztp9aabvr1LE-VKp2ZYo';
-      const GPT_CHANNEL = '3CE0A176F84D2085A6163E515EE8943B';
-      const GPT_TARGET_PHONE = '5514998780239';
+      }).catch(err => console.error(err));
 
-      const sendToGptmaker = async (base64Data?: string) => {
-        if (!GPT_BASE || !GPT_TOKEN || !GPT_CHANNEL) {
-          console.warn('GPTmaker env vars not set; skipping GPTmaker POST');
-          return;
-        }
-
-        const url = `${GPT_BASE.replace(/\/$/, '')}/channel/${GPT_CHANNEL}/start-conversation`;
-
-        // Decide payload by MIME type
-        let gPayload: any = {
-          // optional: include cpf so backend knows who sent
-          // metadata: { cpf: cpf, nome: analysisResult?.studentName || null },
-          message: 'CPF aqui: ' + cpf,
-          phone: GPT_TARGET_PHONE || undefined,
-        };
-
-        if (file) {
-          if (file.type === 'application/pdf') {
-            gPayload.document = base64Data || null;
-            gPayload.documentName = file.name || 'document.pdf';
-            gPayload.documentMimetype = file.type || 'application/pdf';
-          } else {
-            // image
-            gPayload.image = base64Data || null;
-            // gPayload.imageName = file.name || 'image';
-            // gPayload.imageMimetype = file.type || 'image/*';
-          }
-        }
-
-        try {
-          const resp = await fetch(url, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${GPT_TOKEN}`,
-            },
-            body: JSON.stringify(gPayload),
-          });
-
-          // Note: many third-party APIs require CORS config. If you get CORS errors,
-          // call this endpoint from your server instead of the browser.
-          if (!resp.ok) {
-            const text = await resp.text();
-            console.warn('GPTmaker response not ok', resp.status, text);
-          } else {
-            console.log('GPTmaker POST success', await resp.json().catch(() => 'no-json'));
-          }
-        } catch (err) {
-          console.error('Erro enviando para GPTmaker:', err);
-        }
-      };
-
-      // Obtemos base64 novamente apenas para enviar ao GPTmaker (se houver arquivo)
       if (file) {
-        try {
-          const base64Data = await fileToGenerativePart(file);
-          await sendToGptmaker(base64Data);
-        } catch (err) {
-          console.error('Erro ao preparar arquivo para GPTmaker:', err);
-        }
-      } else {
-        // enviar sem arquivo
-        await sendToGptmaker();
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('cpf', cpf);
+
+        const BRIDGE_URL = "https://plataforma.termineseusestudos.com.br/api/gpt-bridge";
+
+        await fetch(BRIDGE_URL, {
+          method: 'POST',
+          body: formData,
+        });
       }
-      
+
     } catch (error) {
-      console.error("Erro ao enviar dados (mas prosseguindo para sucesso):", error);
+      console.error(error);
     } finally {
-      // Sempre mostramos a tela de sucesso para garantir a experiência do usuário
       setStep('success');
       setIsSending(false);
     }
