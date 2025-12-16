@@ -107,6 +107,7 @@ const App: React.FC = () => {
     const payload = {
       cpf: cpf,
       nome: analysisResult.studentName || "Não identificado",
+      local: analysisResult.certifyingInstitution || "Não identificado",
       natureza: analysisResult.naturalSciences,
       humanas: analysisResult.humanSciences,
       linguagens: analysisResult.languages,
@@ -117,7 +118,7 @@ const App: React.FC = () => {
     };
 
     try {
-      const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzN4YjaC4DYGr8unSN_hN0FMd9LEkyflX5xWbKPKZ2Vi0-YOVyTsCbxXJuvRWn5xkFI/exec";
+      const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycby-tNQjUgUJtnM_C0d8I-NWeEfu-qlFRUb1M6QGXh9TbZ4ljd9g0jGRuSBxIfmb2rDz/exec";
 
       fetch(WEBHOOK_URL, {
         method: 'POST',
