@@ -288,11 +288,11 @@ const App: React.FC = () => {
               </p>
 
               <p className="text-gray-600 text-base mb-8 leading-relaxed max-w-sm mx-auto">
-                Vamos encaminhá-lo para MAI realizar a validação. Após essa etapa, sua participação no sorteio está confirmada.
+                Agora que já compartilhou suas notas, envie um vídeo contando sua experiência, seus desafios e como foi chegar até aqui.
               </p>
               
               <a 
-                href="https://wa.me/551140403140" 
+                href="https://wa.me/5543988537249" 
                 target="_blank" 
                 rel="noreferrer"
                 className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-4 rounded-full transition-transform hover:scale-[1.02] uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 text-lg no-underline mb-6"
